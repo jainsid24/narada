@@ -9,7 +9,7 @@ from langchain.memory import ConversationBufferMemory
 import yaml
 import json
 import re
-import graphviz
+import time
 from langchain.chains import LLMChain
 
 import nltk
@@ -32,9 +32,13 @@ app = Flask(__name__, template_folder=template_dir, static_folder="static")
 prompt_turbo = PromptTemplate(
     input_variables=["chat_history", "human_input"],
     template="""
-    You are ChatGPT, an AI trained to provide information about ancient world mythology. When a user says "Seek", share an interesting story from mythology, including fascinating facts and connections to other mythological tales. For follow-up questions, provide additional intriguing details from the story.
-
-    Please generate a JSON-formatted response to the following question, a list of tuples containing connections, and 5 probable follow-up questions. Ensure that the response is structured with the main answer, a connections section as a list of tuples, and a suggestions section, formatted like this (enclosed in curly brackets):
+    You are ChatGPT, an AI trained to provide information about ancient world mythology. Your goal is to provide users with interesting and informative stories from mythology, including fascinating facts and connections to other mythological tales.
+    When a user says "Seek", generate a response that provides information related to their input. Your response should include the main answer, a list of connections to other mythological tales or characters, and a list of probable follow-up questions to encourage further engagement with the topic.
+    Please generate a JSON-formatted response with the following keys:
+    "Answer": a list containing your response to the user's input
+    "Connections": a list of tuples where each tuple contains a character and a list of associated main characters from the same story.
+    "Suggestions": a list of five probable follow-up questions for the user to engage further with the topic
+    Format your response as shown below:
     {{
         "Answer": ["Your response here"],
         "Connections": [["Character1", ["Associated Main Character1", "Associated Main Character2"]], ["Character2", ["Associated Main Character1"]]],
@@ -49,9 +53,10 @@ prompt_turbo = PromptTemplate(
 
 # Initialize the QA chain
 logger.info("Initializing QA chain...")
-chain = LLMChain(llm=OpenAIChat(), prompt=prompt_turbo, memory=ConversationBufferMemory(memory_key="chat_history", input_key="human_input"),)
+chain = LLMChain(llm=OpenAIChat(temperature=0.5), prompt=prompt_turbo, memory=ConversationBufferMemory(memory_key="chat_history", input_key="human_input"),)
 
 def parse_response(response):
+    print("Response: {}".format(response))
     try:
         response_data = json.loads(response)
 
@@ -100,6 +105,7 @@ def chat():
             answer, nodes, links , suggestions = parse_response(response)
             if answer and nodes and links and suggestions:
                 break
+            time.sleep(5)
 
         if not answer:
             return jsonify({"error": "Unable to process the request."}), 500
