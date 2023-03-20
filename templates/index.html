@@ -37,6 +37,8 @@
                       var timestamp = new Date().toLocaleTimeString();
                       $("#typing-indicator").html("");
                       var response = data.response.replace(/\n/g, "<br>");
+                      var nodesTable = '';
+                      var linksTable = '';
                       $("#chat-area").append("<div container class='message-container'><div class='row'><div class='col bot-timestamp'><p class='small mb-1 text-muted'>" + timestamp + "</p></div></div><div class='row bot-message'><div class='col'><span>" + response.replace(/\n/g, "<br><br>").replace(/(https?:\/\/[^\s]+)/g, "<a href='$1' target='_blank'>$1</a>") + "<span></div></div></div>");
                         if (data.nodes && data.links) {
                           var nodesTable = '<table id="nodes-table" class="table table-striped table-bordered" style="width:100%"><thead><tr><th>ID</th><th>Label</th></tr></thead><tbody>';
@@ -52,11 +54,12 @@
                           linksTable += '</tbody></table>';
 
                           $("#chat-area").append("<div container class='message-container'><div class='row'><div class='col bot-timestamp'><p class='small mb-1 text-muted'>" + timestamp + "</p></div></div><div class='row bot-message'><div class='col'>" + nodesTable + "<br>" + linksTable + "</div></div></div>");
-
-                          // Initialize DataTables
-                          $('#nodes-table').DataTable();
-                          $('#links-table').DataTable();
                         }
+
+                        // Initialize DataTables
+                        $('#nodes-table').DataTable();
+                        $('#links-table').DataTable();
+
                         if (data.suggestions) {
                           var timestamp = new Date().toLocaleTimeString();
                           var suggestionsContainer = $("<div container class='message-container'><div class='row'><div class='col bot-timestamp'><p class='small mb-1 text-muted'>" + timestamp + "</p></div></div><div class='row bot-message'><div class='col'><p><b>Suggestions:</b></p></div></div></div>");

@@ -53,7 +53,7 @@ prompt_turbo = PromptTemplate(
 
 # Initialize the QA chain
 logger.info("Initializing QA chain...")
-chain = LLMChain(llm=OpenAIChat(temperature=0.5), prompt=prompt_turbo, memory=ConversationBufferMemory(memory_key="chat_history", input_key="human_input"),)
+chain = LLMChain(llm=OpenAIChat(temperature=0.7), prompt=prompt_turbo, memory=ConversationBufferMemory(memory_key="chat_history", input_key="human_input"),)
 
 def parse_response(response):
     print("Response: {}".format(response))
@@ -93,20 +93,15 @@ def chat():
         question = request.json["question"]
 
         response = None
-        answer, connections, suggestions = None, None, None
+        answer, nodes, links, suggestions = None, None, None, None
 
-        for _ in range(3):  # Retry mechanism
-            response = chain(
-                {
-                    "human_input": question,
-                }
-            )["text"]
-
-            answer, nodes, links , suggestions = parse_response(response)
-            if answer and nodes and links and suggestions:
-                break
-            time.sleep(5)
-
+        response = chain(
+            {
+                "human_input": question,
+            }
+        )["text"]
+        answer, nodes, links, suggestions = parse_response(response)
+        
         if not answer:
             return jsonify({"error": "Unable to process the request."}), 500
         print("Answer: {}".format(answer))

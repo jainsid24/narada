@@ -23,6 +23,16 @@ body {
     animation: fadein 1s;
   }
 
+  #chat-box ul {
+    font-size: 14px;
+    padding-left: 20px;
+    margin-bottom: 5px;
+  }
+  
+  #chat-box ul li {
+    margin-bottom: 5px;
+  }
+
   #chat-area {
     overflow-y: auto;
     max-height: 600px; /* set a maximum height for the chat area */
