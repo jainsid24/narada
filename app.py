@@ -51,7 +51,6 @@ logger.info("Initializing QA chain...")
 chain = LLMChain(llm=OpenAIChat(), prompt=prompt_turbo, memory=ConversationBufferMemory(memory_key="chat_history", input_key="human_input"),)
 
 def parse_response(response):
-    print("Response: {}".format(response))
     try:
         response_data = json.loads(response)
 
@@ -59,10 +58,23 @@ def parse_response(response):
         connections = response_data.get("Connections")
         suggestions = response_data.get("Suggestions")
 
-        return answer, connections, suggestions
+        nodes = []
+        links = []
+        
+        # Create a node for each character
+        for connection in connections:
+            character = connection[0]
+            associated_characters = connection[1]
+            nodes.append({"id": character})
+            
+            # Create a link for each associated character
+            for associated_character in associated_characters:
+                links.append({"source": character, "target": associated_character})
+        
+        return answer, nodes, links, suggestions
     except Exception as e:
         logger.error(f"Error while parsing response: {e}")
-        return None, None, None
+        return None, None, None, None
     
 @app.route("/")
 def index():
@@ -84,15 +96,17 @@ def chat():
                 }
             )["text"]
 
-            answer, connections, suggestions = parse_response(response)
-            if answer and connections and suggestions:
+            answer, nodes, links , suggestions = parse_response(response)
+            if answer and nodes and links and suggestions:
                 break
 
         if not answer:
             return jsonify({"error": "Unable to process the request."}), 500
         print("Answer: {}".format(answer))
-        if connections:
-            print("Connections:", connections)
+        if nodes:
+            print("Nodes:", nodes)
+        if links:
+            print("Links:", links)
 
         if suggestions:
             print("Suggestions:", suggestions)
