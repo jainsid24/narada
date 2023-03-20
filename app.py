@@ -8,6 +8,7 @@ from langchain.prompts import PromptTemplate
 from langchain.memory import ConversationBufferMemory
 from langchain.document_loaders import WebBaseLoader
 import yaml
+import re
 
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.text_splitter import CharacterTextSplitter
@@ -33,23 +34,49 @@ template_dir = os.path.abspath("templates")
 app = Flask(__name__, template_folder=template_dir, static_folder="static")
 
 prompt_turbo=PromptTemplate(
-    input_variables=["chat_history", "human_input", "tone", "persona"],
-    template="""You are a chatbot who acts like {persona}, having a conversation with a human.
-    On each turn, when a user says "narayan narayan", you give an interesting story from ancient mythology and draw its parallelism to the events happening around the world when the story was written in a bulleted list.
-    When asked a followup question, give some more interesting facts from the story.
-    Given the following question, Create a final answer in the tone {tone}. 
+    input_variables=["chat_history", "human_input"],
+    template="""
+    You are ChatGPT, an AI trained to provide information about ancient world mythology. When a user says "Seek", share an interesting story from mythology, including fascinating facts and connections to other mythological tales. For follow-up questions, provide additional intriguing details from the story.
+
+    Please generate a response to the following question, a list of tuples containing connections, and 5 probable follow-up questions. Ensure that the response is structured with the main answer, a connections section as a list of tuples, and a suggestions section, formatted like this:
+
+    Answer: Your response here.
+    Connections: [("Character1", ["Associated Main Character1", "Associated Main Character2"]), ("Character2", ["Associated Main Character1"])]
+    Suggestions: ["Question 1?", "Question 2?", "Question 3?"]
+
     {chat_history}
     Human: {human_input}
-    Chatbot:""",
+    ChatGPT:
+    """,
 )
-
-tone = config.get("tone", "default")
-persona = config.get("persona", "default")
 
 # Initialize the QA chain
 logger.info("Initializing QA chain...")
 chain = LLMChain(llm=OpenAIChat(), prompt=prompt_turbo, memory=ConversationBufferMemory(memory_key="chat_history", input_key="human_input"),)
 
+def parse_response(response):
+    answer_pattern = r"Answer: (.*?)\nConnections:"
+    connections_pattern = r"Connections: (\[.*?\])\nSuggestions:"
+    suggestions_pattern = r"Suggestions: (\[.*?\])"
+
+    answer_match = re.search(answer_pattern, response, re.DOTALL)
+    connections_match = re.search(connections_pattern, response, re.DOTALL)
+    suggestions_match = re.search(suggestions_pattern, response, re.DOTALL)
+
+    if not (answer_match and connections_match and suggestions_match):
+        return None, None, None
+
+    answer = answer_match.group(1)
+    connections_str = connections_match.group(1)
+    suggestions_str = suggestions_match.group(1)
+
+    try:
+        connections = eval(connections_str)
+        suggestions = eval(suggestions_str)
+    except:
+        return None, None, None
+
+    return answer, connections, suggestions
 
 
 @app.route("/")
@@ -68,8 +95,6 @@ def chat():
         response = chain(
             { 
                 "human_input": question,
-                "tone": tone,
-                "persona": persona,  
             }
         )["text"]
         
