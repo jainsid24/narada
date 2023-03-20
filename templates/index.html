@@ -26,22 +26,28 @@
               var responseArray = response.split(" ");
               var currentIndex = 0;
               var responseTimer = setInterval(function() {
-                if (currentIndex < responseArray.length) {
-                  var responseText = responseArray.slice(0, currentIndex + 1).join(" ");
-                  $("#typing-indicator").html(responseText);
-                  currentIndex++;
-                } else {
-                  clearInterval(responseTimer);
-                  var timestamp = new Date().toLocaleTimeString();
-                  $("#typing-indicator").html("");
-                  var response = data.response.replace(/\n/g, "<br>");
-                  $("#chat-area").append("<div container class='message-container'><div class='row'><div class='col bot-timestamp'><p class='small mb-1 text-muted'>" + timestamp + "</p></div></div><div class='row bot-message'><div class='col'><span>" + response.replace(/\n/g, "<br><br>").replace(/(https?:\/\/[^\s]+)/g, "<a href='$1' target='_blank'>$1</a>") + "<span></div></div></div>");
-                  $("#chat-area").scrollTop($("#chat-area").prop("scrollHeight"));
-                  $("#loading-indicator").hide();  
-                }
+                  if (currentIndex < responseArray.length) {
+                      var responseText = responseArray.slice(0, currentIndex + 1).join(" ");
+                      $("#typing-indicator").html(responseText);
+                      currentIndex++;
+                  } else {
+                      clearInterval(responseTimer);
+                      var timestamp = new Date().toLocaleTimeString();
+                      $("#typing-indicator").html("");
+                      var response = data.response.replace(/\n/g, "<br>");
+                      $("#chat-area").append("<div container class='message-container'><div class='row'><div class='col bot-timestamp'><p class='small mb-1 text-muted'>" + timestamp + "</p></div></div><div class='row bot-message'><div class='col'><span>" + response.replace(/\n/g, "<br><br>").replace(/(https?:\/\/[^\s]+)/g, "<a href='$1' target='_blank'>$1</a>") + "<span></div></div></div>");
+                      if (data.nodes && data.links) {
+                          $("#chat-area").append("<div container class='message-container'><div class='row'><div class='col bot-timestamp'><p class='small mb-1 text-muted'>" + timestamp + "</p></div></div><div class='row bot-message'><div class='col'><p><b>Nodes:</b></p><pre>" + JSON.stringify(data.nodes, null, 4) + "</pre><p><b>Links:</b></p><pre>" + JSON.stringify(data.links, null, 4) + "</pre></div></div></div>");
+                      }
+                      if (data.suggestions) {
+                          var suggestions = data.suggestions.join("<br>");
+                          $("#chat-area").append("<div container class='message-container'><div class='row'><div class='col bot-timestamp'><p class='small mb-1 text-muted'>" + timestamp + "</p></div></div><div class='row bot-message'><div class='col'><p><b>Suggestions:</b></p><p>" + suggestions + "</p></div></div></div>");
+                      }
+                      $("#chat-area").scrollTop($("#chat-area").prop("scrollHeight"));
+                      $("#loading-indicator").hide();  
+                  }
               }, typingSpeed);
-
-            },
+          },
             error: function() {
               alert("Unable to process the request.");
               $("#loading-indicator").hide();

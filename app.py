@@ -9,6 +9,7 @@ from langchain.memory import ConversationBufferMemory
 import yaml
 import json
 import re
+import graphviz
 from langchain.chains import LLMChain
 
 import nltk
@@ -123,7 +124,7 @@ def chat():
             chain.memory.clear()
 
         # Set the session counter cookie
-        resp = jsonify({"response": answer})
+        resp = jsonify({"response": answer, "suggestions": suggestions, "nodes": nodes, "links": links})
         resp.set_cookie('session_counter', str(session_counter))
 
         # Return the response as JSON with the session counter cookie
