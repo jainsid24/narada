@@ -1,4 +1,4 @@
-# KnowMyDoc
+# Narada 
 
 ![Python version](https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9-blue?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
@@ -14,15 +14,15 @@ TBD
 To use this utility:
 1. Clone the repository
 ```
-git clone https://github.com/jainsid24/know-my-doc
+git clone https://github.com/jainsid24/narada
 ```
 2. Build the Docker image by running the following command in the terminal:
 ```
-docker build -t know-my-doc:latest .
+docker build -t narada:latest .
 ```
 3. Once the image is built, run the Docker container using the following command:
 ```
-docker run -p 5001:5001 know-my-doc
+docker run -p 5001:5001 narada
 ```
 4. Use curl/postman for API call
 ```
